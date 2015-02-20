@@ -312,21 +312,37 @@ static status_t process_certificate(private_tls_peer_t *this,
 static public_key_t *find_public_key(private_tls_peer_t *this)
 {
 	public_key_t *public = NULL, *current;
+	identification_t *keyid;
 	certificate_t *cert;
 	enumerator_t *enumerator;
 	auth_cfg_t *auth;
+	chunk_t chunk;
 
 	cert = this->server_auth->get(this->server_auth, AUTH_HELPER_SUBJECT_CERT);
 	if (cert)
 	{
+		current = cert->get_public_key(cert);
+		if (!current)
+		{
+			return NULL;
+		}
+		if (!current->get_fingerprint(current, KEYID_PUBKEY_SHA1, &chunk))
+		{
+			current->destroy(current);
+			return NULL;
+		}
+		keyid = identification_create_from_encoding(ID_KEY_ID, chunk);
+		current->destroy(current);
+
 		enumerator = lib->credmgr->create_public_enumerator(lib->credmgr,
-						KEY_ANY, cert->get_subject(cert), this->server_auth);
+											KEY_ANY, keyid, this->server_auth);
 		while (enumerator->enumerate(enumerator, &current, &auth))
 		{
 			public = current->get_ref(current);
 			break;
 		}
 		enumerator->destroy(enumerator);
+		keyid->destroy(keyid);
 	}
 	return public;
 }
