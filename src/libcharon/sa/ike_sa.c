@@ -799,6 +799,11 @@ METHOD(ike_sa_t, add_virtual_ip, void,
 	}
 	else
 	{
+		/* FIXME: for IKEv1, where we adopt VIPs during reauthentication,
+		 * we might have to check for duplicates (and release them), if clients,
+		 * like strongSwan, do a Mode Config exchange on the new SA, which
+		 * should result in a second lease of the same IP - with every reauth
+		 * another duplicate would get added */
 		array_insert_create(&this->other_vips, ARRAY_TAIL, ip->clone(ip));
 	}
 }

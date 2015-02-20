@@ -109,6 +109,8 @@ METHOD(job_t, execute, job_requeue_t,
 						children->insert_last(children, child_sa);
 					}
 					childenum->destroy(childenum);
+					/* FIXME: similar to what we do in adopt_children() in
+					 * ike_sa_manager.c we should adopt the VIPs */
 					if (children->get_count(children))
 					{
 						DBG1(DBG_IKE, "detected reauth of existing IKE_SA, "
