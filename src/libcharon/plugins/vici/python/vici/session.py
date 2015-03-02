@@ -273,8 +273,6 @@ class SessionHandler(object):
         :return: a pair of the command result and a list of emitted events
         :rtype: tuple
         """
-        result = []
-
         if message is not None:
             message = Message.serialize(message)
 
@@ -296,7 +294,7 @@ class SessionHandler(object):
         self.transport.send(packet)
         response = self._read()
         while response.response_type == Packet.EVENT:
-            result.append(Message.deserialize(response.payload))
+            yield Message.deserialize(response.payload)
             response = self._read()
 
         if response.response_type == Packet.CMD_RESPONSE:
@@ -321,8 +319,6 @@ class SessionHandler(object):
                     confirm=Packet.EVENT_CONFIRM,
                 )
             )
-
-        return result
 
 
     def _read(self):
